@@ -1,4 +1,5 @@
 {
   "minSpeed": 100,
-  "maxSpeed": 5000
+  "maxSpeed": 2000,
+  "defaultAliveCellColor": "black"
 }

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import './Cell.scss'
+import gameConfig from '../utils/game_config.json'
 
 function Cell ({ isAlive, areColorsRandom, showGrid }) {
   const getRandomColor = () => {
@@ -16,7 +17,8 @@ function Cell ({ isAlive, areColorsRandom, showGrid }) {
     <div
       className='cellContainer'
       style={{
-        backgroundColor: isAlive ? (areColorsRandom ? getRandomColor() : 'black') : 'white',
+        ...!isAlive && { backgroundColor: 'white' },
+        ...isAlive && { backgroundColor: areColorsRandom ? getRandomColor() : gameConfig.defaultAliveCellColor },
         borderColor: showGrid ? 'rgb(202, 202, 202)' : 'white'
       }}
     />
