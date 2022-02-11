@@ -1,14 +1,12 @@
 .lifeGameContainer {
-  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: grey;
 
   .cellsBoard {
     display: grid;
     grid-template-columns: repeat(100, 1fr);
-    border: 0.8vh rgb(83, 83, 83) solid;
+    border: 0.5vh rgb(83, 83, 83) solid;
     border-radius: 10px;
     background-color: black;
   }

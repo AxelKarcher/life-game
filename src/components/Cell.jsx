@@ -1,9 +1,9 @@
+import PropTypes from 'prop-types'
 import './Cell.scss'
 
-function Cell(props) {
-
+function Cell ({ isAlive, areColorsRandom, showGrid }) {
   const getRandomColor = () => {
-    let letters = '0123456789ABCDEF'
+    const letters = '0123456789ABCDEF'
     let color = '#'
 
     for (let i = 0; i < 6; i++) {
@@ -16,12 +16,16 @@ function Cell(props) {
     <div
       className='cellContainer'
       style={{
-        backgroundColor: props.isAlive ? (props.areColorsRandom ? getRandomColor() : 'black') : 'white',
-        borderColor: props.showGrid ? 'rgb(202, 202, 202)' : 'white'
+        backgroundColor: isAlive ? (areColorsRandom ? getRandomColor() : 'black') : 'white',
+        borderColor: showGrid ? 'rgb(202, 202, 202)' : 'white'
       }}
-    >
-    </div>
+    />
   )
+}
+Cell.propTypes = {
+  isAlive: PropTypes.bool.isRequired,
+  areColorsRandom: PropTypes.bool.isRequired,
+  showGrid: PropTypes.bool.isRequired
 }
 
 export default Cell

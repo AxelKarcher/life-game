@@ -1,103 +1,60 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Button from '@mui/material/Button'
 
 import './LifeGame.scss'
 import Cell from './Cell.jsx'
+import useInterval from '../utils/useInterval'
+import gameConfig from '../utils/game_config.json'
 
-// relire useInterval
-// faire marcher le clique (toggle clickMode)
-// dessin en temps réel
-// gérer les frontières
-// perfs
-// mode nuit
+/*
+  TODO:
+  relire useInterval
+  faire marcher le clique (toggle clickMode)
+  dessin en temps réel
+  gérer les frontières
+  perfs
+  mode nuit
+*/
 
-function useInterval(callback, delay) {
-  const savedCallback = useRef(callback)
-
-  useEffect(() => { savedCallback.current = callback }, [callback])
-
-  useEffect(() => {
-    if (!delay && delay !== 0) {
-      return
-    }
-
-    const id = setInterval(() => savedCallback.current(), delay)
-
-    return () => clearInterval(id)
-  }, [delay])
-}
-
-function LifeGame() {
-
-  const minSpeed = 100
-  const maxSpeed = 5000
-
-  const [cellArr, setCellArr] = useState(Array(10000).fill(false))
-  const [tickSpeed, setTickSpeed] = useState(maxSpeed)
+function LifeGame () {
+  const [cells, setCells] = useState(Array(10000).fill(false))
+  const [tickSpeed, setTickSpeed] = useState(gameConfig.maxSpeed)
   const [isPaused, setIsPaused] = useState(false)
   const [showGrid, setShowGrid] = useState(true)
   const [areColorsRandom, setAreColorsRandom] = useState(false)
 
-  const countAliveNeigh = (index) => {
-    let result = { alives: 0, index: [] }
+  const updateArr = (index) => {
+    const newArr = [...cells]
 
-    if (cellArr[index - 101]) {
-      result.index.push(index - 101)
-    }
-    if (cellArr[index - 100]) {
-      result.index.push(index - 100)
-    }
-    if (cellArr[index - 99]) {
-      result.index.push(index - 99)
-    }
-
-    if (cellArr[index - 1]) {
-      result.index.push(index - 1)
-    }
-    if (cellArr[index + 1]) {
-      result.index.push(index + 1)
-    }
-
-    if (cellArr[index + 99]) {
-      result.index.push(index + 99)
-    }
-    if (cellArr[index + 100]) {
-      result.index.push(index + 100)
-    }
-    if (cellArr[index + 101]) {
-      result.index.push(index + 101)
-    }
-    result.alives = result.index.length
-    return result
+    cells[index] = !cells[index]
+    newArr[index] = !newArr[index]
+    setCells(newArr)
   }
+
+  const countAliveNeigh = (index) => (
+    +cells[index - 101] + +cells[index - 100] + +cells[index - 99] +
+    +cells[index - 1] + +cells[index + 1] + +cells[index + 99] +
+    +cells[index + 100] + +cells[index + 101]
+  )
 
   useInterval(() => {
-    let newArr = [...cellArr]
-    let neighs
+    const result = [...cells]
+    let numberOfAliveNeighbors
 
-    !isPaused && cellArr.forEach((cell, index) => {
-      neighs = countAliveNeigh(index)
-
-      if (neighs.alives === 3) {
-        newArr[index] = true
-      } else if (neighs.alives < 2 || neighs.alives > 3) {
-        newArr[index] = false
+    !isPaused && cells.forEach((_, index) => {
+      numberOfAliveNeighbors = countAliveNeigh(index)
+      if (numberOfAliveNeighbors === 3) {
+        result[index] = true
+      } else if (numberOfAliveNeighbors < 2 || numberOfAliveNeighbors > 3) {
+        result[index] = false
       }
     })
-    setCellArr(newArr)
+    setCells(result)
   }, tickSpeed)
-
-  const updateArr = (index) => {
-    let newArr = [...cellArr]
-
-    cellArr[index] = !cellArr[index]
-    newArr[index] = !newArr[index]
-    setCellArr(newArr)
-  }
 
   return (
     <div className='lifeGameContainer'>
-      <div style={{ display: 'flex', flexDirection: 'column', marginRight: '4vh' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '-15%', marginRight: '10%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <input
             onChange={(e) => setAreColorsRandom(e.target.checked)}
@@ -107,7 +64,7 @@ function LifeGame() {
           />
           <label htmlFor='randomColorsInput'>Random cells color</label>
         </div>
-        <br />
+        <br/>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <input
             onChange={(e) => setShowGrid(e.target.checked)}
@@ -117,48 +74,41 @@ function LifeGame() {
           />
           <label htmlFor='gridInput'>Show cells grid</label>
         </div>
-        <br />
+        <br/>
         <Button
           variant='contained'
-          onClick={() => setCellArr(Array(10000).fill(false)) }
+          onClick={() => setCells(Array(10000).fill(false)) }
         >
           Reset life
         </Button>
-        <br />
+        <br/>
         <Button
           variant='contained'
           onClick={() => setIsPaused(!isPaused) }
         >
           { isPaused ? 'Resume life' : 'Pause life' }
         </Button>
-        <br />
+        <br/>
         <label htmlFor='speedInput'>Life speed: { tickSpeed }</label>
         <input
-          onChange={(e) => setTickSpeed(e.target.value)}
           type='range'
           id='speedInput'
+          min={ gameConfig.minSpeed }
+          max={ gameConfig.maxSpeed }
           value={ tickSpeed }
-          min={ minSpeed }
-          max={ maxSpeed }
+          onChange={(e) => setTickSpeed(e.target.value)}
         />
       </div>
       <div className='cellsBoard'>
-        {
-          cellArr.map((isAlive, index) => {
-            return (
-              <div
-                key={ index }
-                onClick={() => updateArr(index) }
-              >
-                <Cell
-                isAlive={ isAlive }
-                showGrid={ showGrid }
-                areColorsRandom={ areColorsRandom }
-              />
-              </div>
-            )
-          })
-        }
+        {cells.map((isAlive, index) => (
+          <div key={ index } onClick={() => updateArr(index) }>
+            <Cell
+              isAlive={ isAlive }
+              showGrid={ showGrid }
+              areColorsRandom={ areColorsRandom }
+            />
+          </div>
+        ))}
       </div>
     </div>
   )
